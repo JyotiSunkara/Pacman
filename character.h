@@ -3,9 +3,39 @@
 
 # define ROLL_FACTOR 10
 
+#define Face 1
+#define Mouth  2
+#define Eye  3
 
 
 class Pacman {
+
+    private:
+        // Position and direction for path finding 
+        double currentX;
+        double currentY;
+        double oldX;
+        double oldY;
+        int Destination;
+        int initDest;
+        bool getGoal;
+
+        // Animation 
+        void lists();	// call list of the finder
+        bool inMotion;
+        double degree_7;    // a degree of 7, used calculating movement of one frame of animation
+        int walkStatus;     // Waking animation
+        int eyeStatus;		// Face animation
+        int rollingStatus;	// Rotate animation
+        int goalceremonyStatus;	// for goal ceremony
+        double bodyColorR;
+        double bodyColorG;
+        double bodyColorB;
+
+        // Stack of path finding 
+        int* recursionStack;
+        int stackTop;
+
     public:
         enum Direction {
             UP = 0,
@@ -63,31 +93,7 @@ class Pacman {
         }
 
 
-    private:
-        // Position and direction for path finding 
-        double currentX;
-        double currentY;
-        double oldX;
-        double oldY;
-        int Destination;
-        int initDest;
-        bool getGoal;
-
-        // Animation 
-        void lists();	// call list of the finder
-        bool inMotion;
-        double degree_7;    // a degree of 7, used calculating movement of one frame of animation
-        int walkStatus;     // Waking animation
-        int eyeStatus;		// Face animation
-        int rollingStatus;	// Rotate animation
-        int goalceremonyStatus;	// for goal ceremony
-        double bodyColorR;
-        double bodyColorG;
-        double bodyColorB;
-
-        // Stack of path finding 
-        int* recursionStack;
-        int stackTop;
+    
 };
 
 #endif

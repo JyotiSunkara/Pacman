@@ -53,13 +53,13 @@ static inline Cell & cellXY(int x, int y) {
 int main(int argc, char ** argv) {
     if (argc > 1) {
 		if (strcmp(argv[1], "--help") == 0) {
-			cout << "usage: " << argv[0] << " [--auto]" << endl;
+			cout << "usage: " << argv[0] << " [--auto | --custom | -levels]" << endl;
 			return 0;
 		}
 	}
 
 	srand((unsigned)time(NULL));
-
+/*
 	// Input the size of the maze 
 	while(true) {
 		cout << "Please input the width of maze (5 - 50)" << endl;
@@ -74,17 +74,20 @@ int main(int argc, char ** argv) {
 		if(height > 50 || height < 5)	cout << "Out of range!" << endl;
 		else break;
 	}
+*/
+    width = 10;
+    height = 10;
 
     // Manual guide
 	cout << endl;
-	cout << "Space bar : Generate Maze" << endl;
-	cout << "W A S D   : Scroll the maze" << endl;
+	cout << "Space bar  : Generate Maze" << endl;
+	cout << "W A S D    : Scroll the maze" << endl;
 	cout << "Arrow keys : Move the character" << endl;
-    cout << "Page Up   : Zoom in" << endl;
-	cout << "Page Down : Zoom out" << endl;
-	cout << "Home key  : Over view the maze" << endl;
-	cout << "End key   : Closed view the maze" << endl;
-    cout << "Del key   : Reset zoom and scroll" << endl;
+    cout << "Page Up    : Zoom in" << endl;
+	cout << "Page Down  : Zoom out" << endl;
+	cout << "Home key   : Over view the maze" << endl;
+	cout << "End key    : Closed view the maze" << endl;
+    cout << "Del key    : Reset zoom and scroll" << endl;
 
 	cell = new Cell[width * height];
 
@@ -148,7 +151,7 @@ void display() {
 
     glColor3f(1 - R, 1 - G, 1 - B); // Negative of background
     glLoadIdentity();
-    glLineWidth(0.5);
+    glLineWidth(WALL_WIDTH);
     glBegin(GL_LINES);
     double i;
     for (i = 1.0; i < width + 2.0; i++) {
@@ -202,24 +205,24 @@ void eraseWall(int x, int y, int wall) {
 	switch(wall) {
 
 	case up:
-		glVertex2f((x + 1) * 10.0 + 0.1, (y + 2) * 10.0);
-		glVertex2f((x + 2) * 10.0 - 0.1, (y + 2) * 10.0);
+		glVertex2f((x + 1) * 10.0 + WALL_WIDTH/8, (y + 2) * 10.0);
+		glVertex2f((x + 2) * 10.0 - WALL_WIDTH/8, (y + 2) * 10.0);
 		break;
 
 	case down:
-		glVertex2f((x + 1) * 10.0 + 0.1, (y + 1) * 10.0);
-		glVertex2f((x + 2) * 10.0 - 0.1, (y + 1) * 10.0);
+		glVertex2f((x + 1) * 10.0 + WALL_WIDTH/8, (y + 1) * 10.0);
+		glVertex2f((x + 2) * 10.0 - WALL_WIDTH/8, (y + 1) * 10.0);
 		break;
 
 	case right:
         // cout << x << " " << y << endl;
-		glVertex2f((x + 2) * 10.0, (y + 1) * 10.0);
-		glVertex2f((x + 2) * 10.0, (y + 2) * 10.0);
+		glVertex2f((x + 2) * 10.0, (y + 1) * 10.0 + WALL_WIDTH/8);
+		glVertex2f((x + 2) * 10.0, (y + 2) * 10.0 - WALL_WIDTH/8);
 		break;
 
 	case left:
-		glVertex2f((x + 1) * 10.0, (y + 1) * 10.0);
-		glVertex2f((x + 1) * 10.0, (y + 2) * 10.0);
+		glVertex2f((x + 1) * 10.0, (y + 1) * 10.0 + WALL_WIDTH/8);
+		glVertex2f((x + 1) * 10.0, (y + 2) * 10.0 - WALL_WIDTH/8);
 		break;
 	}
 

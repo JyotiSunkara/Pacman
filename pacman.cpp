@@ -265,8 +265,30 @@ void reshape(int w, int h) {
 void display() {
 	double x;
 
-	glClearColor(R, G, B, 0.0);
+	glClearColor(0, 0, 0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+
+	glColor3f(R, G, B);
+	// Draw square with many little squares
+	glBegin(GL_QUADS);
+		glNormal3f(0.0, 0.0, 1.0);
+		const GLfloat kqDelta = .01;
+		for (int i = -100; i < 200; ++i) {
+			for (int j = -100; j < 200; ++j) {
+				glVertex3f(j*kqDelta, i*kqDelta, -.2);
+				glVertex3f((j+1)*kqDelta, i*kqDelta, -.2);
+				glVertex3f((j+1)*kqDelta, (i+1)*kqDelta, -.2);
+				glVertex3f(j*kqDelta, (i+1)*kqDelta, -.2);
+			}
+		}
+	glEnd();
+	glFlush();
+
+
+
+
+
 	glColor3f(1 - R, 1 - G, 1 - B);	// the color is the negative of background color
 
 
@@ -570,11 +592,6 @@ int main(int argc, char ** argv) {
 	srand((unsigned)time(NULL));
 
 
-	GLfloat spot_direction[] = { -1.0, -1.0, 0.0 };
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_direction);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);	
-
 /*
 	// Input the size of the maze 
 	while(true) {
@@ -616,8 +633,28 @@ int main(int argc, char ** argv) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize (500, 500);
 	glutInitWindowPosition (100, 100);
-	glutCreateWindow ("miro");
+	glutCreateWindow ("Pacman");
 	glutReshapeFunc(reshape);
+
+
+	// Lighting set up
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	// Set lighting intensity and color
+	GLfloat qaAmbientLight[]	= {0.2, 0.2, 0.2, 1.0};
+	GLfloat qaDiffuseLight[]	= {0.8, 0.8, 0.8, 1.0};
+	GLfloat qaSpecularLight[]	= {1.0, 1.0, 1.0, 1.0};
+	glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
+
+	// Set the light position
+	GLfloat qaLightPosition[]	= {.5, .5, 0.0, 1.0};
+	glLightfv(GL_LIGHT0, GL_POSITION, qaLightPosition);
+
 	glutDisplayFunc(display);
 	glutIdleFunc(idle);
 	glutSpecialFunc(specialKeyFunc);

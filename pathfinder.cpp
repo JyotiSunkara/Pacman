@@ -27,15 +27,31 @@ PathFinder::PathFinder(int positionX, int positionY, int mazeWidth, int mazeHeig
 	goalceremonyStatus = 0;
 	degree_7 = sin(7 * atan(-1) / 180);	// sin(7 * PI / 180)
 
-	lists();
+	lists(positionX, positionY);
 	initDest = Dest = RIGHT;
 }
 
 int faceLength = 35;
 int faceSides = 60;
 
-void PathFinder::lists(){
+void PathFinder::lists(int positionX, int positionY){
+
 	glNewList(Face, GL_COMPILE);
+		GLfloat ambientColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
+		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+		glEnable(GL_LIGHT0);
+
+		// Set lighting intensity and color
+		GLfloat qaAmbientLight[]	= {0.2, 0.2, 0.2, 1.0};
+		GLfloat qaDiffuseLight[]	= {0.8, 0.8, 0.8, 1.0};
+		GLfloat qaSpecularLight[]	= {1.0, 1.0, 1.0, 1.0};
+		glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
+
+		// Set the light position
+		GLfloat qaLightPosition[]	= {(GLfloat)positionX, (GLfloat)positionY, 2.0, 1.0};
+		glLightfv(GL_LIGHT0, GL_POSITION, qaLightPosition);
 		glBegin(GL_TRIANGLE_FAN);
 			glEdgeFlag(GL_TRUE);
 			glColor3f(1, 127.0/255.0, 80.0/255.0);

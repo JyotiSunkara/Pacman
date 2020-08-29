@@ -20,7 +20,7 @@ private:
 	bool getGoal;
 
 	/* animation */
-	void lists();	// call list of the finder
+	void lists(int positionX, int positionY);	// call list of the finder
 	bool ismoving;
 	double degree_7;	// a degree of 7, used calculating movement of one frame of animation
 	int walkStatus;	// for waking animation

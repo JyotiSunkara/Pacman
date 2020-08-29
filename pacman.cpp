@@ -11,6 +11,7 @@
 
 void display();
 void reviewpoint();
+void drawMaze();
 
 static Cell *cell;
 static int width, height;				// Maze size
@@ -45,63 +46,9 @@ static inline Cell & cellXY(int x, int y) {
 	return cell[y * width + x];
 }
 
-// remove the line between two connected cells
-void eraseWall(int x, int y, int wall) {
 
-	
-	glColor3f(R, G, B);
-	glBegin(GL_LINES);
 
-	// if(overview) {
-
-	// } else {
-
-	// }
-
-	switch(wall) {
-
-	case up:
-		glVertex2f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0);
-		glVertex2f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0);
-		break;
-
-	case down:
-		glVertex2f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0);
-		glVertex2f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0);
-		break;
-
-	case right:
-        // cout << x << " " << y << endl;
-		glVertex2f((x + 2) * 10.0, (y + 1) * 10.0 + 0.02);
-		glVertex2f((x + 2) * 10.0, (y + 2) * 10.0 - 0.02);
-		break;
-
-	case left:
-		glVertex2f((x + 1) * 10.0, (y + 1) * 10.0 + 0.02);
-		glVertex2f((x + 1) * 10.0, (y + 2) * 10.0 - 0.02);
-		break;
-	}
-
-	glEnd();
-}
-
-void drawMaze() {
-
-	int i;
-	int x, y;
-
-	for(i = 0 ; i < width * height ; i++) {
-		x = i % width;
-		y = i / width;
-
-		if(cell[i].road[right] == true)		eraseWall(x, y, right);
-		if(cell[i].road[up] == true)		eraseWall(x, y, up);
-		if(cell[i].road[down] == true)		eraseWall(x, y, down);
-		if(cell[i].road[left] == true)		eraseWall(x, y, left);
-	}
-}
-
-// generate the maze
+// Generate the maze
 void generateMaze() {
 
 	int x, y;	// Position of the current cell
@@ -119,7 +66,7 @@ void generateMaze() {
 		return;
 	}
 
-	// time
+	// Time
 	currTime = getTime();
 	if(currTime - oldTime > timefactor*1)
 		oldTime = currTime;
@@ -244,15 +191,15 @@ void reshape(int w, int h) {
 	if(state == 0) {
 		if(width == size) {
 			viewLeft = 0.0;
-			viewRight = 20 + size*10;
-			viewBottom = 0.0 - move*10;
-			viewUp = size*10 + 20 - move*10;
+			viewRight = 20.0 + size * 10;
+			viewBottom = 0.0 - move * 10;
+			viewUp = size * 10.0 + 20.0 - move * 10;
 		}
 		else{
 			viewLeft = 0.0 - move*10;
 			viewRight = 20 + size*10 - move*10;
 			viewBottom = 0.0;
-			viewUp = size*10 + 20;
+			viewUp = size * 10 + 20;
 		}
 	}
 
@@ -262,66 +209,7 @@ void reshape(int w, int h) {
 	glLoadIdentity();
 }
 
-void display() {
-	double x;
 
-	glClearColor(0, 0, 0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-
-	glColor3f(R, G, B);
-	// Draw square with many little squares
-	glBegin(GL_QUADS);
-		glNormal3f(0.0, 0.0, 1.0);
-		const GLfloat kqDelta = .01;
-		for (int i = -100; i < 200; ++i) {
-			for (int j = -100; j < 200; ++j) {
-				glVertex3f(j*kqDelta, i*kqDelta, -.2);
-				glVertex3f((j+1)*kqDelta, i*kqDelta, -.2);
-				glVertex3f((j+1)*kqDelta, (i+1)*kqDelta, -.2);
-				glVertex3f(j*kqDelta, (i+1)*kqDelta, -.2);
-			}
-		}
-	glEnd();
-	glFlush();
-
-
-
-
-
-	glColor3f(1 - R, 1 - G, 1 - B);	// the color is the negative of background color
-
-
-	// draw default(unmaden) maze
-	glLoadIdentity();
-    glLineWidth(2.0);
-
-	glBegin(GL_LINES);
-
-	for(x = 1 ; x < width+2 ; x++) {
-		glVertex2f(x*10, 10.0);
-		glVertex2f(x*10, height*10+10.0);
-	}
-	for(x = 1 ; x < height+2; x++) {
-		glVertex2f(10.0 , x*10);
-		glVertex2f(width*10+10.0 , x*10);
-	}
-	glEnd();
-
-	drawMaze();
-
-	if(pacmanPath != NULL) {
-		const double SHIFTFACTOR_X = -10.0;
-		const double SHIFTFACTOR_Y = -11.5;
-
-		glLoadIdentity();
-		glTranslatef(pacmanPath->CurrentX() + SHIFTFACTOR_X, pacmanPath->CurrentY() + SHIFTFACTOR_Y, 0);
-		glScalef(0.1, 0.1, 1);
-		pacmanPath->Draw();
-	}
-
-	glutSwapBuffers();
-}
 
 // the space bar toggles making maze or pause
 void keyFunc(unsigned char key, int x, int y) {
@@ -360,8 +248,7 @@ void keyFunc(unsigned char key, int x, int y) {
 	}
 }
 
-void pathFinding()
-{
+void pathFinding() {
 	static int oldTime;
 	int currTime = getTime();
 	static PathFinder finder(::startingX, ::startingY, ::width, ::height);
@@ -534,13 +421,13 @@ void reviewpoint() {
 			viewLeft = 0.0;
 			viewRight = 20 + width*10;
 			viewBottom = 0.0 - move*10;
-			viewUp = width*10 + 20 - move*10;
+			viewUp = width * 10 + 20 - move*10;
 		}
 		else{
 			viewLeft = 0.0 + move*10;
 			viewRight = 20 + height*10 + move*10;
 			viewBottom = 0.0;
-			viewUp = height*10 + 20;
+			viewUp = height * 10 + 20;
 		}
 	}
 
@@ -570,7 +457,7 @@ void idle() {
 		reviewpoint();
 		break;
 	case 2:
-		goalceremony();
+		// goalceremony();
 		break;
 	case 3:
 		exit(0);
@@ -639,21 +526,12 @@ int main(int argc, char ** argv) {
 
 	// Lighting set up
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	GLfloat ambientColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-
-	// Set lighting intensity and color
-	GLfloat qaAmbientLight[]	= {0.2, 0.2, 0.2, 1.0};
-	GLfloat qaDiffuseLight[]	= {0.8, 0.8, 0.8, 1.0};
-	GLfloat qaSpecularLight[]	= {1.0, 1.0, 1.0, 1.0};
-	glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
-
-	// Set the light position
-	GLfloat qaLightPosition[]	= {.5, .5, 0.0, 1.0};
-	glLightfv(GL_LIGHT0, GL_POSITION, qaLightPosition);
+	
 
 	glutDisplayFunc(display);
 	glutIdleFunc(idle);
@@ -663,4 +541,221 @@ int main(int argc, char ** argv) {
 	glutMainLoop();
 
 	return 0;
+}
+
+void display() {
+	double x;
+
+	glClearColor(0, 0, 0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+
+	glColor3f(R, G, B);
+	// Draw square with many little squares
+	glBegin(GL_QUADS);
+		glNormal3f(0.0, 0.0, 1.0);
+		const GLfloat kqDelta = 1;
+		for (int i = -100; i < 200; ++i) {
+			for (int j = -100; j < 200; ++j) {
+				glVertex3f(j * kqDelta, i * kqDelta, -0.2);
+				glVertex3f((j + 1) * kqDelta, i * kqDelta, -0.2);
+				glVertex3f((j + 1) * kqDelta, (i + 1) * kqDelta, -0.2);
+				glVertex3f(j * kqDelta, (i + 1) * kqDelta, -0.2);
+			}
+		}
+	glEnd();
+	glFlush();
+
+	glColor3f(1 - R, 1 - G, 1 - B);	// The color is the negative of background color
+
+	// draw default(unmaden) maze
+	glLoadIdentity();
+    glLineWidth(2.0);
+
+	// glBegin(GL_QUADS);
+
+	// for(x = 1 ; x < width+2 ; x++) {
+	// 	// Top
+	// 	glVertex3f(x * 10, 10.0, 0);
+	// 	glVertex3f(x * 10, height * 10 + 10.0, 0);
+	// 	glVertex3f(x * 10 + 0.5, height * 10 + 10.0, 0);
+	// 	glVertex3f(x * 10 + 0.5, 10.0, 0);
+
+	// 	// Right
+	// 	glVertex3f(x * 10 + 0.5, 10.0, 0);
+	// 	glVertex3f(x * 10 + 0.5, height * 10 + 10.0, 0);
+	// 	glVertex3f(x * 10 + 0.5, height * 10 + 10.0, -0.2);
+	// 	glVertex3f(x * 10 + 0.5, 10.0, -0.2);
+
+	// 	//Left
+	// 	glVertex3f(x * 10, 10.0, 0);
+	// 	glVertex3f(x * 10, height * 10 + 10.0, 0);
+	// 	glVertex3f(x * 10, height * 10 + 10.0, -0.2);
+	// 	glVertex3f(x * 10, 10.0, -0.2);
+	// }
+
+	// glEnd();
+
+	// glBegin(GL_QUADS);
+
+	// for(x = 1 ; x < height+2; x++) {
+	// 	// Top
+	// 	glVertex3f(10.0 , x * 10, 0);
+	// 	glVertex3f(width * 10 + 10.0 , x * 10, 0);
+	// 	glVertex3f(width * 10 + 10.0 , x * 10 + 0.5, 0);
+	// 	glVertex3f(10.0 , x * 10 + 0.5, 0);
+
+
+	// 	// Down
+	// 	glVertex3f(10.0 , x * 10, 0);
+	// 	glVertex3f(width * 10 + 10.0 , x * 10, 0);
+	// 	glVertex3f(width * 10 + 10.0 , x * 10, -0.2);
+	// 	glVertex3f(10.0 , x * 10, -0.2);
+
+	// 	// Up
+	// 	glVertex3f(10.0 , x * 10 + 0.5, 0);
+	// 	glVertex3f(width * 10 + 10.0 , x * 10 + 0.5, 0);
+	// 	glVertex3f(width * 10 + 10.0 , x * 10 + 0.5, -0.2);
+	// 	glVertex3f(10.0 , x * 10 + 0.5, -0.2);
+	// }
+
+	// glEnd();
+
+	drawMaze();
+
+	if(pacmanPath != NULL) {
+		const double SHIFTFACTOR_X = -10.0;
+		const double SHIFTFACTOR_Y = -11.5;
+
+		glLoadIdentity();
+		glTranslatef(pacmanPath->CurrentX() + SHIFTFACTOR_X, pacmanPath->CurrentY() + SHIFTFACTOR_Y, 0);
+		glScalef(0.1, 0.1, 1);
+		pacmanPath->Draw();
+	}
+
+	glutSwapBuffers();
+}
+
+
+
+void drawWall(int x, int y, int wall) {
+
+	
+	glBegin(GL_QUADS);
+
+	// if(overview) {
+	// } else {
+	// }
+
+	glColor3f(1 - R, 1 - G, 1 - B);
+	
+
+	switch(wall) {
+
+	case up:
+
+		// glVertex2f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0);
+		// glVertex2f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0);
+
+		// Top
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0 + 0.5, 0.0);
+
+		// Up
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0 + 0.5, -0.2);
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0 + 0.5, -0.2);
+		
+		// Down
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0, -0.2);
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0, -0.2);
+
+		break;
+
+	case down:
+		// glVertex2f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0);
+		// glVertex2f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0);
+		// Top
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0 + 0.5, 0.0);
+
+		// Up
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0 + 0.5, -0.2);
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0 + 0.5, -0.2);
+
+		// Down
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0 + 0.5, 0.0);
+		glVertex3f((x + 2) * 10.0 - 0.02, (y + 1) * 10.0 + 0.5, -0.2);
+		glVertex3f((x + 1) * 10.0 + 0.02, (y + 1) * 10.0 + 0.5, 0.2);
+		break;
+
+	case right:
+		// glVertex2f((x + 2) * 10.0, (y + 1) * 10.0 + 0.02);
+		// glVertex2f((x + 2) * 10.0, (y + 2) * 10.0 - 0.02);
+
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.02, 0.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0 + 0.02, 0.0);
+
+		// Left
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.02, 0.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 - 0.02, -0.2);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.02, -0.2);
+
+		// Right
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0 + 0.02, 0.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0 - 0.02, -0.2);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0 + 0.02, -0.2);
+		break;
+
+	case left:
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.02, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0 + 0.02, 0.0);
+
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.02, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 - 0.02, -0.2);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.02, -0.2);
+
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0 + 0.02, 0.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0 - 0.02, 0.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0 - 0.02, -0.2);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0 + 0.02, -0.2);
+		break;
+	}
+
+	glEnd();
+}
+
+
+
+void drawMaze() {
+
+	int i;
+	int x, y;
+
+	for(i = 0 ; i < width * height ; i++) {
+		x = i % width;
+		y = i / width;
+
+		if(cell[i].road[right] == false)	drawWall(x, y, right);
+		if(cell[i].road[up] == false)        drawWall(x, y, up);
+		if(cell[i].road[down] == false)		 drawWall(x, y, down);
+		if(cell[i].road[left] == false)		 drawWall(x, y, left);
+	}
 }

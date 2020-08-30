@@ -1,28 +1,52 @@
-miro
-====
-An OpenGL based 2D maze game.
+# Pacman
 
-![maze](http://peecky.github.io/miro/screenshots/miro.PNG)
+## Controls
 
-## How to ##
-Run the program on command prompt. Input the width and the height of the maze. Then a new window will be appeared.
+- `Space bar` 
+    Begin procedural generation of the maze.
 
-Activate the window if it is on background. Press space bar to generate the maze. Then move the character to reach the goal.
+- `W A S D`    
+    Scroll the maze right, left, top and bottom.
 
-![full size mage](http://peecky.github.io/miro/screenshots/mirofull.PNG)
+- `Arrow keys` 
+    Move the character right, left, up and down when the maze allows it!
 
-## Control Keys ##
-*	Start/Stop: Space Bar
-*	Move: Arrow Keys
-*	Speed: + -
-*	Scroll the Maze: w a s d
-*	Zoom In/Out: Page Up Down
-*	View Whole Maze: Home
-*	Closed View: End
-*	Initialize zoom and scroll: Insert
-*	Initialize all (zoom, scroll, speed): Del
+- `Page up`    
+    Zoom into Pacman's location, feature available in closed view only.
 
-![reached the goal](http://peecky.github.io/miro/screenshots/reachthegoal.PNG)
+- `Page down`
+    Zoom out of Pacman's location, feature available in closed view only.
 
-## Auto Mode ##
-Run the program with --auto option. The character will move and reach the goal automatically.
+- `Home key`  
+    Over view the maze to see the enemy, bomb and star locations!
+
+- `End key` 
+    Closed view the maze, can view Pacman and its surroundings.
+
+- `Delete key`
+    Reset zoom and scroll back to default closed view.
+
+
+## Features 
+
+### Pacman Light
+### Procedural Maze
+### Pacman 
+### Bombs
+### Stars
+### Coins
+### Ghost
+### Lighting
+### Score
+### Health
+
+
+## Special Features
+
+### Blinking Pacman
+### Roatating Pacman
+### Goal Ceremony
+### Auto Mode
+### Rainbow Square
+### Custom Maze Size
+### Levels

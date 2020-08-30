@@ -1,6 +1,6 @@
 UNAME := $(shell uname -s)
 CC = g++
-OBJ = pacman.o pathfinder.o enemy.o
+OBJ = pacman.o pathfinder.o enemy.o objects.o
 LDFLAGS = -lGL -lGLU -lglut
 
 # Mac OS
@@ -19,6 +19,9 @@ pathfinder.o : pathfinder.cpp pathfinder.h pacman.h
 
 enemy.o : enemy.cpp enemy.h pacman.h
 	$(CC) -c -g enemy.cpp
+
+objects.o : objects.cpp objects.h pacman.h
+	$(CC) -c -g objects.cpp
 
 clean :
 	rm $(OBJ)

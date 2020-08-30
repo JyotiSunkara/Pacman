@@ -8,21 +8,29 @@
 
 #include "pacman.h"
 #include "pathfinder.h"
+#include "objects.h"
+#include "enemy.h"
+
 
 void display();
 void reviewpoint();
 void drawMaze();
+void displayText(float x, float y, float z, char *string);
 
-static Cell *cell;
+static Cell *cell, *enemyCell;
 static int width, height;				// Maze size
 static int startingX, startingY;		// Start
 static int goalX, goalY;				// Goal
+static int positionX, positionY;		// Start
+
 static double R = 33.0/255.0, G =  33.0/255.0, B = 222.0/255.0;		// Background
 
 static int *chosen;						// Connected cells array
 static bool work;						/* Maze generate/ Pause */
 static int state = 0;					/* Making maze/ Finding path/ End */
 static PathFinder* pacmanPath = NULL;	// Path finder object
+static Ghost* enemyPath = NULL;	// Enemy finder object
+
 static bool overview = false;
 static bool autoMode = false;
 static int userInputLastDirection = -1;
@@ -31,6 +39,14 @@ static int viewLeft, viewRight, viewBottom, viewUp;	// View points
 static int ViewZoomFactor;
 static int changeX, changeY;
 static int timefactor;		// controls duration
+
+int score = 0;
+int battery = 30;
+static Objects* oneStar = NULL;
+static Objects* oneBomb = NULL;
+static Objects* manyCoins = NULL;
+
+
 
 static int getTime() {
 	static time_t initSec = 0;
@@ -44,6 +60,10 @@ static int getTime() {
 
 static inline Cell & cellXY(int x, int y) {
 	return cell[y * width + x];
+}
+
+static inline Cell & enemyXY(int x, int y) {
+	return enemyCell[y * width + x];
 }
 
 
@@ -61,8 +81,10 @@ void generateMaze() {
 	if(length == width * height) {
 
 		state = 1; // Maze generation done
-		for(int i = 0; i < width*height; i++)
+		for(int i = 0; i < width*height; i++) {
 			cell[i].isOpen = false;
+			enemyCell[i].isOpen = false;
+		}
 		return;
 	}
 
@@ -81,19 +103,23 @@ void generateMaze() {
 			startingX = x = rand()%width;
 			startingY = y = height - 1;
 			cellXY(x, y).road[up] = true;
+			enemyXY(x, y).road[up] = true;			
 			// goal
 			goalX = x = rand()%width;
 			goalY = y = 0;
 			cellXY(x, y).road[down] = true;
+			enemyXY(x, y).road[down] = true;			
 		} else {
 			// starting point
 			startingX = x = width - 1;
 			startingY = y = rand()%height;
 			cellXY(x, y).road[right] = true;
+			enemyXY(x, y).road[right] = true;			
 			// goal
 			goalX = x = 0;
 			goalY = y = rand()%height;
 			cellXY(x, y).road[left] = true;
+			enemyXY(x, y).road[left] = true;			
 		}
 
 		chosen = new int [height * width];
@@ -102,6 +128,7 @@ void generateMaze() {
 		x = rand()%width;
 		y = rand()%height;
 		cellXY(x, y).isOpen = true;
+		enemyXY(x, y).isOpen = true;
 		chosen[0] = width*y + x;	// store the first visited cell
 
 		length = length + 1;
@@ -126,9 +153,12 @@ void generateMaze() {
 				continue;
 
 			cellXY(x, y + 1).isOpen = true;
+			enemyXY(x, y + 1).isOpen = true;
 
 			cellXY(x, y + 1).road[ down ] = true;
+			enemyXY(x, y + 1).road[ down ] = true;
 			cellXY(x, y).road[ up ] = true;
+			enemyXY(x, y).road[ up ] = true;
 
 			chosen[length] = width*(y + 1) + x;
 			length++;
@@ -140,9 +170,12 @@ void generateMaze() {
 				continue;
 
 			cellXY(x, y - 1).isOpen = true;
+			enemyXY(x, y - 1).isOpen = true;
 
 			cellXY(x, y - 1).road[ up ] = true;
+			enemyXY(x, y - 1).road[ up ] = true;
 			cellXY(x, y).road[ down ] = true;
+			enemyXY(x, y).road[ down ] = true;
 
 			chosen[length] = width*(y - 1) + x;
 			length++;
@@ -154,9 +187,12 @@ void generateMaze() {
 				continue;
 
 			cellXY(x + 1,  y).isOpen = true;
+			enemyXY(x + 1,  y).isOpen = true;
 
 			cellXY(x + 1,  y).road[ left ] = true;
+			enemyXY(x + 1,  y).road[ left ] = true;
 			cellXY(x,  y).road[ right ] = true;
+			enemyXY(x,  y).road[ right ] = true;
 
 			chosen[length] = width * y + x + 1;
 			length++;
@@ -168,9 +204,12 @@ void generateMaze() {
 				continue;
 
 			cellXY(x - 1,  y).isOpen = true;
+			enemyXY(x - 1,  y).isOpen = true;
 
 			cellXY(x - 1,  y).road[ right ] = true;
+			enemyXY(x - 1,  y).road[ right ] = true;
 			cellXY(x,  y).road[ left ] = true;
+			enemyXY(x,  y).road[ left ] = true;
 
 			chosen[length] = width * y + x - 1;
 			length++;
@@ -203,7 +242,9 @@ void reshape(int w, int h) {
 		}
 	}
 
-	gluOrtho2D(viewLeft, viewRight, viewBottom, viewUp);
+	// gluOrtho2D(viewLeft, viewRight, viewBottom, viewUp);
+	glOrtho(viewLeft, viewRight, viewBottom, viewUp, -15, 15);
+
 
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
@@ -211,7 +252,7 @@ void reshape(int w, int h) {
 
 
 
-// the space bar toggles making maze or pause
+// The space bar toggles making maze or pause
 void keyFunc(unsigned char key, int x, int y) {
 	switch (key) {
 	case ' ':
@@ -254,6 +295,8 @@ void pathFinding() {
 	static PathFinder finder(::startingX, ::startingY, ::width, ::height);
 	static int x = ::startingX;
 	static int y = ::startingY;
+	::positionX = x;
+	::positionY = y;
 
 	if(currTime - oldTime > timefactor)
 		oldTime = currTime;
@@ -328,8 +371,7 @@ void pathFinding() {
 		else if(tempDest == left) x++, finder.setDest(PathFinder::RIGHT);
 		else if(tempDest == right) x--, finder.setDest(PathFinder::LEFT);
 		else if(tempDest == up) y--, finder.setDest(PathFinder::DOWN);
-	}
-	else {
+	} else {
 		if (userInputLastDirection > -1) {
 			switch (userInputLastDirection) {
 			case up:
@@ -362,11 +404,95 @@ void pathFinding() {
 	}
 }
 
+
+
+void enemyHunting() {
+	static int oldTime;
+	int currTime = getTime();
+	static Ghost enemy(::goalX, ::goalY, ::width, ::height);
+	static int x = ::goalX;
+	static int y = ::goalY;
+
+	if(currTime - oldTime > timefactor)
+		oldTime = currTime;
+	else return;
+
+	if (enemyPath == NULL) {
+		enemyPath = &enemy;	// To use in other functions
+		enemy.SetBodyColor(1.0, 1.0, 0.0);
+	}
+
+	enemy.UpdateStatus();
+	if(enemy.isMoving()) {
+		return;
+	}
+
+	if(x == ::positionX && y == ::positionY) {	// if get Pacman
+		::state = 5;
+		enemyPath->setGetgoal();
+		return;
+	}
+
+	
+		enemyXY(x, y).isOpen = true;	// visit starting position
+		if(enemy.isstackEmpty() || enemy.getStacktop() < NOT_ANY_DIRECTION) {
+			if (enemyXY(x,  y).road[down] == true && y > 0 && enemyXY(x, y-1).isOpen == false) {
+				enemy.setDest(Ghost::DOWN);
+				y--;
+				enemyXY(x, y).isOpen = true;
+				enemy.stackPush(down);
+				return;
+			} else enemy.stackPush(NOTDOWN);
+		}
+		if(enemy.getStacktop() == NOTDOWN) {
+			if(enemyXY(x, y).road[left] == true && x > 0 && enemyXY(x-1, y).isOpen == false) {
+				enemy.setDest(Ghost::LEFT);
+				x--;
+				enemyXY(x, y).isOpen = true;
+				enemy.stackPush(left);
+				return;
+			}
+			else enemy.stackPush(NOTLEFT);
+		}
+		if(enemy.getStacktop() == NOTLEFT) {
+			if(enemyXY(x, y).road[right] == true && x < ::width-1 && enemyXY(x+1, y).isOpen == false) {
+				enemy.setDest(Ghost::RIGHT);
+				x++;
+				enemyXY(x, y).isOpen = true;
+				enemy.stackPush(right);
+				return;
+			}
+			else enemy.stackPush(NOTRIGHT);
+		}
+		if(enemy.getStacktop() == NOTRIGHT) {
+			if(enemyXY(x, y).road[up] == true && y < ::height-1 && enemyXY(x, y+1).isOpen == false) {
+				enemy.setDest(Ghost::UP);
+				y++;
+				enemyXY(x, y).isOpen = true;
+				enemy.stackPush(up);
+				return;
+			}
+			else enemy.stackPush(NOTUP);
+		}
+	
+		int tempDest;
+		enemy.stackPop();
+		enemy.stackPop();
+		enemy.stackPop();
+		enemy.stackPop();
+		tempDest = enemy.stackPop();
+		if(tempDest == down) y++, enemy.setDest(Ghost::UP);
+		else if(tempDest == left) x++, enemy.setDest(Ghost::RIGHT);
+		else if(tempDest == right) x--, enemy.setDest(Ghost::LEFT);
+		else if(tempDest == up) y--, enemy.setDest(Ghost::DOWN);
+	
+}
+
 void goalceremony() {
 	static int count = 0;
 	static int oldTime = 0;
 	int currTime = getTime();
-
+	
 	if(currTime - oldTime < timefactor * 0.2) return;
 
 	oldTime = currTime;
@@ -440,7 +566,8 @@ void reviewpoint() {
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
 
-	gluOrtho2D(viewLeft, viewRight, viewBottom, viewUp);
+	// gluOrtho2D(viewLeft, viewRight, viewBottom, viewUp);
+	glOrtho(viewLeft, viewRight, viewBottom, viewUp, -15, 15);
 
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
@@ -455,9 +582,10 @@ void idle() {
 	case 1:
 		pathFinding();
 		reviewpoint();
+		enemyHunting();
 		break;
 	case 2:
-		// goalceremony();
+		goalceremony();
 		break;
 	case 3:
 		exit(0);
@@ -473,6 +601,8 @@ int main(int argc, char ** argv) {
 		if (strcmp(argv[1], "--help") == 0) {
 			cout << "usage: " << argv[0] << " [--auto | --custom | -levels]" << endl;
 			return 0;
+		} else if (strcmp(argv[1], "--auto") == 0) {
+			autoMode = true;
 		}
 	}
 
@@ -510,6 +640,20 @@ int main(int argc, char ** argv) {
     cout << "Del key    : Reset zoom and scroll" << endl;
 
 	cell = new Cell[width * height];
+	enemyCell = new Cell[width * height];
+
+	Objects Star(rand()%(height - 1) * 10.0 - 5.0, rand()%(width - 1) * 10.0 - 5.0, 0);
+
+	if (oneStar == NULL) {
+		oneStar = &Star;	// To use in other functions
+	}
+
+	// Objects Bomb(rand()%(height - 1) * 10.0 - 5.0, rand()%(width - 1) * 10.0 - 5.0, 0);
+
+	// if (oneBomb == NULL) {
+	// 	oneBomb = &Bomb;	// To use in other functions
+	// }
+
 
 	timefactor = INIT_TIMEFACTOR;
 	changeX = 0;
@@ -525,12 +669,12 @@ int main(int argc, char ** argv) {
 
 
 	// Lighting set up
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-	GLfloat ambientColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+	// glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	// GLfloat ambientColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+	// glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_LIGHTING);
+	// glEnable(GL_COLOR_MATERIAL);
+	// glEnable(GL_LIGHTING);
 	
 
 	glutDisplayFunc(display);
@@ -548,6 +692,7 @@ void display() {
 
 	glClearColor(0, 0, 0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
+	glClearDepth(-5.0);
 
 
 	glColor3f(R, G, B);
@@ -557,10 +702,10 @@ void display() {
 		const GLfloat kqDelta = 1;
 		for (int i = -100; i < 200; ++i) {
 			for (int j = -100; j < 200; ++j) {
-				glVertex3f(j * kqDelta, i * kqDelta, -0.2);
-				glVertex3f((j + 1) * kqDelta, i * kqDelta, -0.2);
-				glVertex3f((j + 1) * kqDelta, (i + 1) * kqDelta, -0.2);
-				glVertex3f(j * kqDelta, (i + 1) * kqDelta, -0.2);
+				glVertex3f(j * kqDelta, i * kqDelta, -1.0);
+				glVertex3f((j + 1) * kqDelta, i * kqDelta, -1.0);
+				glVertex3f((j + 1) * kqDelta, (i + 1) * kqDelta, -1.0);
+				glVertex3f(j * kqDelta, (i + 1) * kqDelta, -1.0);
 			}
 		}
 	glEnd();
@@ -572,56 +717,23 @@ void display() {
 	glLoadIdentity();
     glLineWidth(2.0);
 
-	// glBegin(GL_QUADS);
+	char buffer[20];
+	score = timefactor;
+	snprintf(buffer, 20, "Score: %d", score);
+	displayText(11, 112, 0, buffer);
 
-	// for(x = 1 ; x < width+2 ; x++) {
-	// 	// Top
-	// 	glVertex3f(x * 10, 10.0, 0);
-	// 	glVertex3f(x * 10, height * 10 + 10.0, 0);
-	// 	glVertex3f(x * 10 + 0.5, height * 10 + 10.0, 0);
-	// 	glVertex3f(x * 10 + 0.5, 10.0, 0);
-
-	// 	// Right
-	// 	glVertex3f(x * 10 + 0.5, 10.0, 0);
-	// 	glVertex3f(x * 10 + 0.5, height * 10 + 10.0, 0);
-	// 	glVertex3f(x * 10 + 0.5, height * 10 + 10.0, -0.2);
-	// 	glVertex3f(x * 10 + 0.5, 10.0, -0.2);
-
-	// 	//Left
-	// 	glVertex3f(x * 10, 10.0, 0);
-	// 	glVertex3f(x * 10, height * 10 + 10.0, 0);
-	// 	glVertex3f(x * 10, height * 10 + 10.0, -0.2);
-	// 	glVertex3f(x * 10, 10.0, -0.2);
-	// }
-
-	// glEnd();
-
-	// glBegin(GL_QUADS);
-
-	// for(x = 1 ; x < height+2; x++) {
-	// 	// Top
-	// 	glVertex3f(10.0 , x * 10, 0);
-	// 	glVertex3f(width * 10 + 10.0 , x * 10, 0);
-	// 	glVertex3f(width * 10 + 10.0 , x * 10 + 0.5, 0);
-	// 	glVertex3f(10.0 , x * 10 + 0.5, 0);
-
-
-	// 	// Down
-	// 	glVertex3f(10.0 , x * 10, 0);
-	// 	glVertex3f(width * 10 + 10.0 , x * 10, 0);
-	// 	glVertex3f(width * 10 + 10.0 , x * 10, -0.2);
-	// 	glVertex3f(10.0 , x * 10, -0.2);
-
-	// 	// Up
-	// 	glVertex3f(10.0 , x * 10 + 0.5, 0);
-	// 	glVertex3f(width * 10 + 10.0 , x * 10 + 0.5, 0);
-	// 	glVertex3f(width * 10 + 10.0 , x * 10 + 0.5, -0.2);
-	// 	glVertex3f(10.0 , x * 10 + 0.5, -0.2);
-	// }
-
-	// glEnd();
+	snprintf(buffer, 20, "Battery: %d", battery);
+	displayText(90, 112, 0, buffer);
 
 	drawMaze();
+
+	// Objects Coins(20, 20, 1);
+	// Objects Bomb(30, 30, 2);
+
+	// Coins.lists();
+	// Bomb.lists();
+
+	oneStar->lists();
 
 	if(pacmanPath != NULL) {
 		const double SHIFTFACTOR_X = -10.0;
@@ -631,6 +743,17 @@ void display() {
 		glTranslatef(pacmanPath->CurrentX() + SHIFTFACTOR_X, pacmanPath->CurrentY() + SHIFTFACTOR_Y, 0);
 		glScalef(0.1, 0.1, 1);
 		pacmanPath->Draw();
+	}
+
+
+	if(enemyPath != NULL) {
+		const double SHIFTFACTOR_X = -10.0;
+		const double SHIFTFACTOR_Y = -11.5;
+
+		glLoadIdentity();
+		glTranslatef(enemyPath->CurrentX() + SHIFTFACTOR_X, enemyPath->CurrentY() + SHIFTFACTOR_Y, 0);
+		glScalef(0.1, 0.1, 1);
+		enemyPath->Draw();
 	}
 
 	glutSwapBuffers();
@@ -648,98 +771,107 @@ void drawWall(int x, int y, int wall) {
 	// }
 
 	glColor3f(1 - R, 1 - G, 1 - B);
-	
 
 	switch(wall) {
 
 	case up:
 
-		// glVertex2f((x + 1) * 10.0 + 0.02, (y + 2) * 10.0);
-		// glVertex2f((x + 2) * 10.0 - 0.02, (y + 2) * 10.0);
-
 		// Top
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 + 0.5, 0.0);
+		glNormal3f(0.0, 0.0, 1.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 + 0.5, 14.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 + 0.5, 14.0);
 
 		// Up
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 + 0.5, -0.2);
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 + 0.5, -0.2);
+		glNormal3f(0.0, 1.0, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 + 0.5, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 + 0.5, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0 + 0.5, -14.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0 + 0.5, -14.0);
 		
 		// Down
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, -0.2);
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, -0.2);
+		glNormal3f(0.0, -1.0, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, -14.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, -14.0);
+		
 
 		break;
 
 	case down:
-		// glVertex2f((x + 1) * 10.0, (y + 1) * 10.0);
-		// glVertex2f((x + 2) * 10.0, (y + 1) * 10.0);
-		// Top
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, 0.0);
+		
+	// Top
+		glNormal3f(0.0, 0.0, 1.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, 14.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, 14.0);
 
 		// Up
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, -0.2);
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, -0.2);
+		glNormal3f(0.0, 1.0, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, -14.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, -14.0);
 
 		// Down
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0 + 0.5, -0.2);
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0 + 0.5, 0.2);
+		glNormal3f(0.0, -1.0, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, -14.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, -14.0);	
 		break;
 
 	case right:
-		// glVertex2f((x + 2) * 10.0, (y + 1) * 10.0);
-		// glVertex2f((x + 2) * 10.0, (y + 2) * 10.0);
-
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0, 0.0);
+		
+		glNormal3f(0.0, 0.0, 1.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0, 14.0);
 
 		// Left
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, -0.2);
-		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, -0.2);
+		glNormal3f(-1.0, 0.0, 0.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0, (y + 2) * 10.0, -14.0);
+		glVertex3f((x + 2) * 10.0, (y + 1) * 10.0, -14.0);
 
 		// Right
-		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0, -0.2);
-		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0, -0.2);
+		glNormal3f(1.0, 0.0, 0.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 2) * 10.0, -14.0);
+		glVertex3f((x + 2) * 10.0 + 0.5, (y + 1) * 10.0, -14.0);
 		break;
 
 	case left:
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0, 0.0);
+		glNormal3f(0.0, 0.0, 1.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0, 14.0);
 
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, -0.2);
-		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, -0.2);
+		// Left
+		glNormal3f(-1.0, 0.0, 0.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 1) * 10.0, (y + 2) * 10.0, -14.0);
+		glVertex3f((x + 1) * 10.0, (y + 1) * 10.0, -14.0);
 
-		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0, 0.0);
-		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0, 0.0);
-		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0, -0.2);
-		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0, -0.2);
+		// Right
+		glNormal3f(1.0, 0.0, 0.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0, 14.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0, 14.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 2) * 10.0, -14.0);
+		glVertex3f((x + 1) * 10.0 + 0.5, (y + 1) * 10.0, -14.0);
 		break;
 	}
 
 	glEnd();
+
 }
 
 
@@ -753,9 +885,26 @@ void drawMaze() {
 		x = i % width;
 		y = i / width;
 
-		if(cell[i].road[right] == false)	drawWall(x, y, right);
-		if(cell[i].road[up] == false)        drawWall(x, y, up);
-		if(cell[i].road[down] == false)		 drawWall(x, y, down);
-		if(cell[i].road[left] == false)		 drawWall(x, y, left);
+		if(cell[i].road[right] == false) drawWall(x, y, right);
+		if(cell[i].road[up] == false) drawWall(x, y, up);
+		if(cell[i].road[down] == false)	drawWall(x, y, down);
+		if(cell[i].road[left] == false)	drawWall(x, y, left);
 	}
 }
+
+void displayText(float x, float y, float z, char *string) {
+	// glDisable(GL_LIGHTING);
+	glColor3f(255.0/255.0, 215.0/255.0, 0);
+
+  	glRasterPos3f(x, y, z);
+	for (char* c = string; *c != '\0'; c++) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);  // Updates the position
+	}
+
+	// glEnable(GL_LIGHTING);
+}
+    
+
+
+
+

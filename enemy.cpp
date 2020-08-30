@@ -32,43 +32,55 @@ Ghost::Ghost(int positionX, int positionY, int mazeWidth, int mazeHeight) {
     initDest = Dest = RIGHT;
 }
 
+int enemyLength = 35;
+int enemySides = 60;
+
 void Ghost::lists(){
-	glNewList(Face, GL_COMPILE);
-		glBegin(GL_TRIANGLE_FAN);
-			glEdgeFlag(GL_TRUE);
-			glColor3f(1, 127.0/255.0, 80.0/255.0);
-			glVertex2f(0, 0);
+	glPushMatrix();
 
-			glColor3f(1, 1, 0);
-			for(int i = 0; i < 3; i++) {
-                float sideAngle = 90 + (i * 2.0 * 180.0)/ 3;
+	glNewList(EnemyFace, GL_COMPILE);
+	glPushMatrix();
+	glRotatef(-90, 0.0, 0.0, 1.0);
+	glBegin(GL_TRIANGLE_FAN);
+			glNormal3f(0, 0, 1.0);
+			glColor3f(255.0/255.0, 105/255.0, 180/255.0);
+			glVertex3f(0, 0, 0);
+			for(int i = 0; i < enemySides/2 + 1; i++) {
+                float sideAngle = 90 + (i * 2.0 * 180.0)/ enemySides;
                 sideAngle = (sideAngle * M_PI)/ 180.0;
-                float x = 3 * cos(sideAngle);
-                float y = 3 * sin(sideAngle);
-                glVertex2f(x, y);
+                float x = enemyLength * cos(sideAngle);
+                float y = enemyLength * sin(sideAngle);
+                glVertex3f(x, y, 0);
 		    }
-			glVertex2f(0, 3);	
+			glVertex3f(0, enemyLength, 0);	
+			glEnd();
+	glPopMatrix();
+
+	glBegin(GL_QUADS);
+			glNormal3f(0, 0, 1.0);
+			glVertex3f(-enemyLength, 0, 0);
+			glVertex3f(-enemyLength, -enemyLength, 0);
+			glVertex3f(enemyLength, -enemyLength, 0);
+			glVertex3f(enemyLength, 0, 0);
+			glEnd();
+	glEndList();
+
+
+	glNewList(EnemyMouth, GL_COMPILE);
+	glColor3f(0, 0, 0);
+		glBegin(GL_TRIANGLES);
+
+		glVertex3f(-enemyLength, -enemyLength, 0);
+		glVertex3f(-enemyLength/2.0, -10, 0);
+		glVertex3f( 0, -enemyLength, 0);
+
+		glVertex3f(0, -enemyLength, 0);
+		glVertex3f(enemyLength/2.0, -10, 0);
+		glVertex3f(enemyLength, -enemyLength, 0);
 		glEnd();
 	glEndList();
 
-	glNewList(Mouth, GL_COMPILE);
-		glBegin(GL_TRIANGLE_FAN);
-			glEdgeFlag(GL_TRUE);
-
-			glVertex2f(0, 0);
-
-            float start = 3.0 * 3/4.0;
-            for(int i = start - 5; i < start + 6; i++) {
-                float sideAngle = 90 + (i * 2.0 * 180.0)/ 3;
-                sideAngle = (sideAngle * M_PI)/ 180.0;
-                float x = 3 * cos(sideAngle);
-                float y = 3 * sin(sideAngle);
-                glVertex2f(x, y);
-            }
-		glEnd();
-	glEndList();
-
-	glNewList(Eye, GL_COMPILE);
+	glNewList(EnemyEye, GL_COMPILE);
 		int eyeLength = 5;
 		int eyeSides = 60;
 		int eyePos = 0;
@@ -85,6 +97,7 @@ void Ghost::lists(){
 			glVertex2f(0, eyeLength);	
 		glEnd();
 	glEndList();
+	glPopMatrix();
 
 }
 
@@ -137,16 +150,17 @@ void Ghost::Draw() {
 	// draw body
 	double rotateAngle = 0;
 	switch (initDest) {
-	case LEFT:
-		rotateAngle = 180.0;
-		break;
-	case UP:
-		rotateAngle = 90.0;
-		break;
-	case DOWN:
-		rotateAngle = -90.0;
-		break;
+		case LEFT:
+			rotateAngle = 180.0;
+			break;
+		case UP:
+			rotateAngle = 90.0;
+			break;
+		case DOWN:
+			rotateAngle = -90.0;
+			break;
 	}
+
 	if(rollingStatus < ROLL_FACT){
 		switch (initDest) {
 		case LEFT:
@@ -188,7 +202,7 @@ void Ghost::Draw() {
 	// glTranslatef(20,15,0);
 	glRotatef(rotateAngle, 0, 0, 1);
 	// glTranslatef(-20, -15, 0);
-	glCallList(Face);
+	glCallList(EnemyFace);
 
 	glPushMatrix();
 
@@ -196,7 +210,7 @@ void Ghost::Draw() {
 	glTranslatef(0, 20, 0);
 	glColor3f(0, 0, 0);
 	if(eyeStatus >= 24) glScalef(1, (30 - eyeStatus -1)/6.0, 1);
-	glCallList(Eye);
+	glCallList(EnemyEye);
 
 	/* Draw Mouth */
 	glPopMatrix();
@@ -206,7 +220,7 @@ void Ghost::Draw() {
 	// else glRotatef(abs(walkStatus * 5), 0, 0, 1);
 		//if(walkStatus >= 0) glRotatef(5*walkStatus, 0, 0, 1);
 		//else glRotatef(walkStatus * -5 , 0, 0, 1);
-	glCallList(Mouth);
+	glCallList(EnemyMouth);
 	glPopMatrix();
 }
 

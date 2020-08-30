@@ -1,6 +1,10 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 
+#define EnemyFace  11
+#define EnemyMouth  12
+#define EnemyEye  13
+
 class Ghost {
 private:
     double currentX;

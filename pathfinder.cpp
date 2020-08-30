@@ -10,7 +10,7 @@ void PathFinder::setDest(Direction newDest){
 	this->initDest = Dest;
 	this->Dest = newDest;
 	rollingStatus = 0;
-	ismoving =true;
+	ismoving = true;
 }
 
 PathFinder::PathFinder(int positionX, int positionY, int mazeWidth, int mazeHeight) {
@@ -36,38 +36,55 @@ int faceSides = 60;
 
 void PathFinder::lists(int positionX, int positionY){
 
+    glPushMatrix();
+
 	glNewList(Face, GL_COMPILE);
-		GLfloat ambientColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
-		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
-		glEnable(GL_LIGHT0);
+		// GLfloat ambientColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
+		// glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+		// glEnable(GL_LIGHT0);
+		// glEnable(GL_LIGHT1);
 
-		// Set lighting intensity and color
-		GLfloat qaAmbientLight[]	= {0.2, 0.2, 0.2, 1.0};
-		GLfloat qaDiffuseLight[]	= {0.8, 0.8, 0.8, 1.0};
-		GLfloat qaSpecularLight[]	= {1.0, 1.0, 1.0, 1.0};
-		glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
 
-		// Set the light position
-		GLfloat qaLightPosition[]	= {(GLfloat)positionX, (GLfloat)positionY, 2.0, 1.0};
-		glLightfv(GL_LIGHT0, GL_POSITION, qaLightPosition);
+		// // Set lighting intensity and color
+		// GLfloat qaAmbientLight[]	= {0.2, 0.2, 0.2, 1.0};
+		// GLfloat qaDiffuseLight[]	= {0.8, 0.8, 0.8, 1.0};
+		// GLfloat qaSpecularLight[]	= {1.0, 1.0, 1.0, 1.0};
+		// glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
+		// glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
+		// glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
+
+		// // Set the light position
+		// GLfloat qaLightPosition[]	= {(GLfloat)positionX, (GLfloat)positionY, -0.5, 1.0};
+		// glLightfv(GL_LIGHT0, GL_POSITION, qaLightPosition);
+
+
+		// glLightfv(GL_LIGHT1, GL_AMBIENT, qaAmbientLight);
+		// glLightfv(GL_LIGHT1, GL_DIFFUSE, qaDiffuseLight);
+		// glLightfv(GL_LIGHT1, GL_SPECULAR, qaSpecularLight);
+		// glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.5);
+		// GLfloat spotLightDirection[]	= {(GLfloat)(positionX), (GLfloat)(positionY), 0.0, 1.0};
+		// glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotLightDirection);
+		// glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20); 
+		// GLfloat spotPosition[]	= {(GLfloat)positionX - 10, (GLfloat)positionY, -0.5, 1.0};
+		// glLightfv(GL_LIGHT1, GL_POSITION, spotPosition);
+
+
 		glBegin(GL_TRIANGLE_FAN);
-			glEdgeFlag(GL_TRUE);
+			glNormal3f(0, 0, 1.0);
 			glColor3f(1, 127.0/255.0, 80.0/255.0);
-			glVertex2f(0, 0);
-
+			glVertex3f(0, 0, 0);
 			glColor3f(1, 1, 0);
 			for(int i = 0; i < faceSides; i++) {
                 float sideAngle = 90 + (i * 2.0 * 180.0)/ faceSides;
                 sideAngle = (sideAngle * M_PI)/ 180.0;
                 float x = faceLength * cos(sideAngle);
                 float y = faceLength * sin(sideAngle);
-                glVertex2f(x, y);
+                glVertex3f(x, y, 0);
 		    }
-			glVertex2f(0, faceLength);	
-		glEnd();
-	glEndList();
+			glVertex3f(0, faceLength, 0);	
+			glEnd();
+		glEndList();
+
 
 	glNewList(Mouth, GL_COMPILE);
 		glBegin(GL_TRIANGLE_FAN);
@@ -103,6 +120,9 @@ void PathFinder::lists(int positionX, int positionY){
 			glVertex2f(0, eyeLength);	
 		glEnd();
 	glEndList();
+
+    glPopMatrix();
+
 
 }
 
@@ -151,7 +171,7 @@ void PathFinder::Move() {
 void PathFinder::Draw() {
 	glTranslatef(50, 70, 0);
 
-	// draw body
+	// Rotation
 	double rotateAngle = 0;
 	switch (initDest) {
 	case LEFT:

@@ -11,9 +11,9 @@ private:
 
 public:
     enum Type { 
-		STAR = 0, // For battery
-		BOMB = 1, // Lose points
-		COIN = 2, // Gain points
+		STAR = 100, // For battery
+		BOMB = 101, // Lose points
+		COIN = 102, // Gain points
 	};
     Objects(int positionX, int positionY, int code);
 	~Objects() {
@@ -29,6 +29,10 @@ public:
 
 	void setUsed() {
 		active = false;
+	}
+
+	bool getActive() {
+		return active;
 	}
 
 };

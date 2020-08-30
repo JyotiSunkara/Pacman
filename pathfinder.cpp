@@ -36,9 +36,10 @@ int faceSides = 60;
 
 void PathFinder::lists(int positionX, int positionY){
 
-    glPushMatrix();
 
 	glNewList(Face, GL_COMPILE);
+    glPushMatrix();
+
 		// GLfloat ambientColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
 		// glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 		// glEnable(GL_LIGHT0);
@@ -83,10 +84,14 @@ void PathFinder::lists(int positionX, int positionY){
 		    }
 			glVertex3f(0, faceLength, 0);	
 			glEnd();
+    glPopMatrix();
+	
 		glEndList();
 
 
 	glNewList(Mouth, GL_COMPILE);
+    glPushMatrix();
+
 		glBegin(GL_TRIANGLE_FAN);
 			glEdgeFlag(GL_TRUE);
 
@@ -101,9 +106,13 @@ void PathFinder::lists(int positionX, int positionY){
                 glVertex2f(x, y);
             }
 		glEnd();
+    glPopMatrix();
+	
 	glEndList();
 
 	glNewList(Eye, GL_COMPILE);
+    glPushMatrix();
+
 		int eyeLength = 5;
 		int eyeSides = 60;
 		int eyePos = 0;
@@ -119,9 +128,10 @@ void PathFinder::lists(int positionX, int positionY){
 		    }	
 			glVertex2f(0, eyeLength);	
 		glEnd();
+    glPopMatrix();
+
 	glEndList();
 
-    glPopMatrix();
 
 
 }

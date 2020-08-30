@@ -15,13 +15,13 @@ Objects::Objects(int positionX, int positionY, int code) {
 }
 
 void Objects::lists() {
-    glPushMatrix();
-    glTranslatef(posX, posY, 0);
+    if(active == false) return;
+    if(type == STAR) {
+            glPushMatrix();
 
-    switch(type) {
-        case STAR:
-            if(!active) return;
-            glNewList(STAR, GL_COMPILE);
+           
+            glTranslatef(posX, posY, 0);
+
             glColor3f(0, 1, 1);
             glBegin(GL_TRIANGLES);
                 glVertex3f(-1.0f, 0.0f, 0.0f);
@@ -59,45 +59,17 @@ void Objects::lists() {
                 glVertex3f( 0.0, 5.0f, 0.0f);
                 glVertex3f( 1.0f, 0.0f, 0.0f);
             glEnd();
-            glEndList();
-            break;
+            glPopMatrix();
 
-        case COIN: {
-        if(!active) return;
-
+          
+    } else if (type == COIN) {
         int sides = 60;
         int length = 20;
-        glNewList(COIN, GL_COMPILE);
         glBegin(GL_TRIANGLE_FAN);
 			glNormal3f(0, 0, 1.0);
 			glColor3f(1, 1, 0);
 			glVertex3f(0, 0, -1.0);
 			glColor3f(1, 1, 0);
-			for(int i = 0; i < sides; i++) {
-                float sideAngle = 90 + (i * 2.0 * 180.0)/ sides;
-                sideAngle = (sideAngle * M_PI)/ 180.0;
-                float x = length * cos(sideAngle);
-                float y = length * sin(sideAngle);
-                glVertex3f(x, y, -1);
-		    }
-			glVertex3f(0, length, -1);	
-			glEnd();
-		glEndList();
-
-
-            break;
-        }
-        case BOMB: {
-        if(!active) return;
-
-        int sides = 60;
-        int length = 20;
-        glNewList(BOMB, GL_COMPILE);
-        glBegin(GL_TRIANGLE_FAN);
-			glNormal3f(0, 0, 1.0);
-			glColor3f(0.5, 0.5, 0.5);
-			glVertex3f(0, 0, -1.0);
-			glColor3f(0, 0, 0);
 			for(int i = 0; i < sides; i++) {
                 float sideAngle = 90 + (i * 2.0 * 180.0)/ sides;
                 sideAngle = (sideAngle * M_PI)/ 180.0;
@@ -107,21 +79,41 @@ void Objects::lists() {
 		    }
 			glVertex3f(0, length, -1);	
 		glEnd();
+        
+    } else if(type == BOMB) {
+       
+        glPushMatrix();
+
+        glTranslatef(posX, posY, 0);
+        int bombSides = 60;
+        int bombLength = 4;
+        glBegin(GL_TRIANGLE_FAN);
+			glNormal3f(0, 0, 1.0);
+			glColor3f(0.5, 0.5, 0.5);
+			glVertex3f(0, 0, 0);
+			glColor3f(0, 0, 0);
+			for(int i = 0; i < bombSides; i++) {
+                float sideAngle = 90 + (i * 2.0 * 180.0)/ bombSides;
+                sideAngle = (sideAngle * M_PI)/ 180.0;
+                float x = bombLength * cos(sideAngle);
+                float y = bombLength * sin(sideAngle);
+                glVertex3f(x, y, 0);
+		    }
+			glVertex3f(0, bombLength, 0);	
+		glEnd();
 
         glColor3f(1, 0, 0);
-		glPushMatrix();
-		glTranslatef(-0.3, length, 0);
+		glTranslatef(-1, bombLength, 0);
         glBegin(GL_QUADS);
-			glVertex3f(1, 0, -1.0);
+			glVertex3f(3, 0, -1.0);
 			glVertex3f(0, 0, -1.0);
-			glVertex3f(0, 0.5, -1.0);
-			glVertex3f(1, 0.5, -1.0);
-		glPopMatrix();
-		glEndList();
-        break;
-        }
+			glVertex3f(0, 1, -1.0);
+			glVertex3f(3, 1, -1.0);
+        glEnd();
+        glPopMatrix();
+        
     }
 
-    glPopMatrix();
+   
 
 }

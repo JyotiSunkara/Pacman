@@ -42,9 +42,12 @@ static int timefactor;		// controls duration
 
 int score = 0;
 int battery = 30;
-static Objects* oneStar = NULL;
-static Objects* oneBomb = NULL;
-static Objects* manyCoins = NULL;
+Objects* oneStar = NULL;
+Objects* oneBomb = NULL;
+Objects* manyCoins = NULL;
+int flagStar = 1;
+int flagBomb = 1;
+
 
 
 
@@ -314,6 +317,7 @@ void pathFinding() {
 
 	if(x == ::goalX && y == ::goalY) {	// if get the goal
 		::state++;
+		score = score + 100;
 		pacmanPath->setGetgoal();
 		return;
 	}
@@ -371,6 +375,8 @@ void pathFinding() {
 		else if(tempDest == left) x++, finder.setDest(PathFinder::RIGHT);
 		else if(tempDest == right) x--, finder.setDest(PathFinder::LEFT);
 		else if(tempDest == up) y--, finder.setDest(PathFinder::DOWN);
+		::positionX = x;
+		::positionY = y;
 	} else {
 		if (userInputLastDirection > -1) {
 			switch (userInputLastDirection) {
@@ -401,6 +407,9 @@ void pathFinding() {
 			}
 			userInputLastDirection = -1;
 		}
+
+		::positionX = x;
+		::positionY = y;
 	}
 }
 
@@ -642,17 +651,28 @@ int main(int argc, char ** argv) {
 	cell = new Cell[width * height];
 	enemyCell = new Cell[width * height];
 
-	Objects Star(rand()%(height - 1) * 10.0 - 5.0, rand()%(width - 1) * 10.0 - 5.0, 0);
-
+	Objects Star(rand()%(height - 2) * 10.0 + 15.0, rand()%(width - 2) * 10.0 + 15.0, 100);
+	// cout << "A: " << rand()%(height - 2) * 10.0 + 15.0 << "\n";
 	if (oneStar == NULL) {
 		oneStar = &Star;	// To use in other functions
 	}
 
-	// Objects Bomb(rand()%(height - 1) * 10.0 - 5.0, rand()%(width - 1) * 10.0 - 5.0, 0);
+	std::cout << "Star: " << oneStar->CurrentX() << " " << oneStar->CurrentY() << "\n";
 
-	// if (oneBomb == NULL) {
-	// 	oneBomb = &Bomb;	// To use in other functions
-	// }
+
+	Objects Bomb(rand()%(height - 2) * 10.0 + 15.0, rand()%(width - 2) * 10.0 + 15.0, 101);
+	// cout << "B: " << rand()%(height - 2) * 10.0 - 5.0 << "\n";
+	if (oneBomb == NULL) {
+		oneBomb = &Bomb;	// To use in other functions
+	}
+
+	Objects Coins(rand()%(height - 2) * 10.0 + 15.0, rand()%(width - 2) * 10.0 + 15.0, 101);
+	// cout << "B: " << rand()%(height - 2) * 10.0 - 5.0 << "\n";
+	if (manyCoins == NULL) {
+		manyCoins = &Bomb;	// To use in other functions
+	}
+
+
 
 
 	timefactor = INIT_TIMEFACTOR;
@@ -718,22 +738,36 @@ void display() {
     glLineWidth(2.0);
 
 	char buffer[20];
-	score = timefactor;
 	snprintf(buffer, 20, "Score: %d", score);
 	displayText(11, 112, 0, buffer);
 
 	snprintf(buffer, 20, "Battery: %d", battery);
 	displayText(90, 112, 0, buffer);
-
+	
 	drawMaze();
+	// std::cout << "Hey: " << ::positionX << " " << ::positionY << "\n";
+	if(oneStar->getActive() == true && oneStar->CurrentX() == ::positionX * 10.0 + 15.0 && oneStar->CurrentY() == ::positionY * 10.0 + 15.0) {
+		oneStar->setUsed();
+		flagStar = 0;
+	}
 
-	// Objects Coins(20, 20, 1);
-	// Objects Bomb(30, 30, 2);
+	if(!flagStar && oneStar->getActive() == false) {
+		score += 10;
+		flagStar = 1;
+	}
 
-	// Coins.lists();
-	// Bomb.lists();
+	if(oneBomb->getActive() == true && oneBomb->CurrentX() == ::positionX * 10.0 + 15.0 && oneBomb->CurrentY() == ::positionY * 10.0 + 15.0) {
+		oneBomb->setUsed();
+		flagBomb = 0;
+	}
+
+	if(!flagBomb && oneBomb->getActive() == false) {
+		score -= 10;
+		flagBomb = 1;
+	}
 
 	oneStar->lists();
+	oneBomb->lists();
 
 	if(pacmanPath != NULL) {
 		const double SHIFTFACTOR_X = -10.0;

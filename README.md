@@ -30,43 +30,64 @@
 ## Features 
 
 ### Zooming
-Page Up and Page Down to zzom into pacmans surroundings in closed view!
+    Page Up and Page Down to zzom into pacmans surroundings in closed view!
 
 ### Pacman Light
-The light mode enables the viewer to see only the immediate surroundings! Ambient light is diabled!
+    The light mode enables the viewer to see only the immediate surroundings! Ambient light is diabled!
+
+![Pacman](images/lightmaze.png)
 
 ### Procedural Maze
-Unique maze each time the program is run!
+    Unique maze each time the program is run!
+
+![Pacman](images/brightmaze.png)
+
 
 ### Pacman 
-Designed to llok like Toru Iwatchi's original!
+    Designed to look like Toru Iwatani's original!
+
+![Pacman](images/pacman.png)
 
 ### Bombs
-Cause a loss of 10 points when encountered!
+    Cause a loss of 10 points when encountered!
+
+![Pacman](images/bomb.png)
 
 ### Stars
-Cause an increse of 10 points when encountered as well as an increase in battery power!
+    Cause an increse of 10 points when encountered as well as an increase in battery power!
+
+![Pacman](images/star.png)
+
 
 ### Ghost
-Designed to look like from Toru Iwatchi's original!
+    Designed to look like Pinky from Toru Iwatani's original!
+
+![Pacman](images/ghost.png)
+
 
 ### Score
-Displayed in all modes!
+    Displayed in all modes!
+
+![Pacman](images/score.png)
+
 
 ### Battery
-Displayed in light mode!
+    Displayed in light mode!
+
+![Pacman](images/battery.png)
+
 
 
 ## Special Features
 
 ### Blinking Pacman
-Paman gives you a wink every now and then!
+    Paman gives you a wink every now and then!
 
 ### Rotating Pacman
-Pacman rotates to take the path you have chosen for it!
+    Pacman rotates to take the path you have chosen for it!
 
 ### Auto Mode
-Pacman travels the mode all on his own in this mode!
+    Pacman travels the mode all on his own in this mode!
 
 ### Custom Maze Size
-You can create a free size maze in this mode!
+    You can create a free size maze in this mode!

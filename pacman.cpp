@@ -11,7 +11,8 @@
 #include "objects.h"
 #include "enemy.h"
 
-
+extern bool lightMode;
+extern int batteryTime;
 void display();
 void reviewpoint();
 void drawMaze();
@@ -41,10 +42,9 @@ static int changeX, changeY;
 static int timefactor;		// controls duration
 
 int score = 0;
-int battery = 30;
 Objects* oneStar = NULL;
 Objects* oneBomb = NULL;
-Objects* manyCoins = NULL;
+Objects* oneBattery = NULL;
 int flagStar = 1;
 int flagBomb = 1;
 
@@ -279,15 +279,23 @@ void keyFunc(unsigned char key, int x, int y) {
 		break;
 	case 'w':
 		if (changeY < height * 5) changeY += 5;	// scroll the maze up
+		batteryTime -= 1;
+		
 		break;
 	case 'a':
 		if (changeX > width * -5) changeX -= 5;	// scroll the maze left
+		batteryTime -= 1;
+		
 		break;
 	case 's':
 		if (changeY > height * -5) changeY -= 5;	// scroll the maze down
+		batteryTime -= 1;
+		
 		break;
 	case 'd':
 		if (changeX < width * 5) changeX += 5;	// scroll the maze right
+		batteryTime -= 1;
+		
 		break;
 	}
 }
@@ -513,15 +521,19 @@ void goalceremony() {
 void specialKeyFunc(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_RIGHT:
+	batteryTime -= 1;
 		userInputLastDirection = right;
 		break;
 	case GLUT_KEY_LEFT:
+	batteryTime -= 1;
 		userInputLastDirection = left;
 		break;
 	case GLUT_KEY_DOWN:
+	batteryTime -= 1;
 		userInputLastDirection = down;
 		break;
 	case GLUT_KEY_UP:
+	batteryTime -= 1;
 		userInputLastDirection = up;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
@@ -591,12 +603,13 @@ void idle() {
 	case 1:
 		pathFinding();
 		reviewpoint();
-		enemyHunting();
+		if(autoMode == false)
+			enemyHunting();
 		break;
 	case 2:
-		goalceremony();
-		break;
+		std::cout << "\nReached the end!\nScore is " << score << "\nBattery is " << batteryTime <<"\n"; 
 	case 3:
+		
 		exit(0);
 		break;
 	}
@@ -605,15 +618,36 @@ void idle() {
 
 int main(int argc, char ** argv) {
 	using namespace std;
+	width = 10;
+	height = 10;
 
 	if (argc > 1) {
 		if (strcmp(argv[1], "--help") == 0) {
-			cout << "usage: " << argv[0] << " [--auto | --custom | -levels]" << endl;
+			cout << "usage: " << argv[0] << " [--auto | --custom | -light]" << endl;
 			return 0;
 		} else if (strcmp(argv[1], "--auto") == 0) {
 			autoMode = true;
+		} else if (strcmp(argv[1], "--light") == 0) {
+			lightMode = true;
+		} else if (strcmp(argv[1], "--custom") == 0) {
+		
+			// Input the size of the maze 
+			while(true) {
+				cout << "Please input the width of maze (5 - 50)" << endl;
+				cin >> width;
+				if(width > 50 || width < 5)	cout << "Out of range!" << endl;
+				else break;
+			}
+
+			while(true) {
+				cout << "Please input the height of maze (5 - 50)" << endl;
+				cin >> height;
+				if(height > 50 || height < 5)	cout << "Out of range!" << endl;
+				else break;
+			}
+
 		}
-	}
+	} 
 
 	srand((unsigned)time(NULL));
 
@@ -635,8 +669,7 @@ int main(int argc, char ** argv) {
 	}
 */
 
-	width = 10;
-	height = 10;
+
 	/* help message */
 	cout << endl;
 	cout << "Space bar  : Generate Maze" << endl;
@@ -657,7 +690,7 @@ int main(int argc, char ** argv) {
 		oneStar = &Star;	// To use in other functions
 	}
 
-	std::cout << "Star: " << oneStar->CurrentX() << " " << oneStar->CurrentY() << "\n";
+	// std::cout << "Star: " << oneStar->CurrentX() << " " << oneStar->CurrentY() << "\n";
 
 
 	Objects Bomb(rand()%(height - 2) * 10.0 + 15.0, rand()%(width - 2) * 10.0 + 15.0, 101);
@@ -665,15 +698,6 @@ int main(int argc, char ** argv) {
 	if (oneBomb == NULL) {
 		oneBomb = &Bomb;	// To use in other functions
 	}
-
-	Objects Coins(rand()%(height - 2) * 10.0 + 15.0, rand()%(width - 2) * 10.0 + 15.0, 101);
-	// cout << "B: " << rand()%(height - 2) * 10.0 - 5.0 << "\n";
-	if (manyCoins == NULL) {
-		manyCoins = &Bomb;	// To use in other functions
-	}
-
-
-
 
 	timefactor = INIT_TIMEFACTOR;
 	changeX = 0;
@@ -689,13 +713,14 @@ int main(int argc, char ** argv) {
 
 
 	// Lighting set up
-	// glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-	// GLfloat ambientColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-	// glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	// glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	GLfloat ambientColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 
-	// glEnable(GL_COLOR_MATERIAL);
-	// glEnable(GL_LIGHTING);
-	
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_DEPTH_TEST);
 
 	glutDisplayFunc(display);
 	glutIdleFunc(idle);
@@ -712,7 +737,7 @@ void display() {
 
 	glClearColor(0, 0, 0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glClearDepth(-5.0);
+	glClearDepth(-15.0);
 
 
 	glColor3f(R, G, B);
@@ -720,8 +745,8 @@ void display() {
 	glBegin(GL_QUADS);
 		glNormal3f(0.0, 0.0, 1.0);
 		const GLfloat kqDelta = 1;
-		for (int i = -100; i < 200; ++i) {
-			for (int j = -100; j < 200; ++j) {
+		for (int i = 0; i < 500; ++i) {
+			for (int j = 0; j < 500; ++j) {
 				glVertex3f(j * kqDelta, i * kqDelta, -1.0);
 				glVertex3f((j + 1) * kqDelta, i * kqDelta, -1.0);
 				glVertex3f((j + 1) * kqDelta, (i + 1) * kqDelta, -1.0);
@@ -741,9 +766,17 @@ void display() {
 	snprintf(buffer, 20, "Score: %d", score);
 	displayText(11, 112, 0, buffer);
 
-	snprintf(buffer, 20, "Battery: %d", battery);
-	displayText(90, 112, 0, buffer);
+	if(lightMode) {
+		if(batteryTime < 0) {
+			glDisable(GL_LIGHT0);
+			std::cout << "\nYou exhausted your battery!\n";
+			exit(0);
+		}
 	
+		snprintf(buffer, 20, "Battery: %d", batteryTime);
+		displayText(90, 112, 0, buffer);
+	}
+
 	drawMaze();
 	// std::cout << "Hey: " << ::positionX << " " << ::positionY << "\n";
 	if(oneStar->getActive() == true && oneStar->CurrentX() == ::positionX * 10.0 + 15.0 && oneStar->CurrentY() == ::positionY * 10.0 + 15.0) {
@@ -927,7 +960,7 @@ void drawMaze() {
 }
 
 void displayText(float x, float y, float z, char *string) {
-	// glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 	glColor3f(255.0/255.0, 215.0/255.0, 0);
 
   	glRasterPos3f(x, y, z);
@@ -935,7 +968,7 @@ void displayText(float x, float y, float z, char *string) {
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);  // Updates the position
 	}
 
-	// glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 }
     
 

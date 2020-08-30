@@ -13,7 +13,7 @@ public:
     enum Type { 
 		STAR = 100, // For battery
 		BOMB = 101, // Lose points
-		COIN = 102, // Gain points
+		BATTERY = 102, // Gain points
 	};
     Objects(int positionX, int positionY, int code);
 	~Objects() {

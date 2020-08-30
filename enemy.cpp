@@ -36,7 +36,6 @@ int enemyLength = 35;
 int enemySides = 60;
 
 void Ghost::lists(){
-	glPushMatrix();
 
 	glNewList(EnemyFace, GL_COMPILE);
 	glPushMatrix();
@@ -53,20 +52,22 @@ void Ghost::lists(){
                 glVertex3f(x, y, 0);
 		    }
 			glVertex3f(0, enemyLength, 0);	
-			glEnd();
+	glEnd();
 	glPopMatrix();
-
+	glPushMatrix();
 	glBegin(GL_QUADS);
 			glNormal3f(0, 0, 1.0);
 			glVertex3f(-enemyLength, 0, 0);
 			glVertex3f(-enemyLength, -enemyLength, 0);
 			glVertex3f(enemyLength, -enemyLength, 0);
 			glVertex3f(enemyLength, 0, 0);
-			glEnd();
+		glEnd();
+	glPopMatrix();
 	glEndList();
 
 
 	glNewList(EnemyMouth, GL_COMPILE);
+	glPushMatrix();
 	glColor3f(0, 0, 0);
 		glBegin(GL_TRIANGLES);
 
@@ -78,9 +79,11 @@ void Ghost::lists(){
 		glVertex3f(enemyLength/2.0, -10, 0);
 		glVertex3f(enemyLength, -enemyLength, 0);
 		glEnd();
+	glPopMatrix();
 	glEndList();
 
 	glNewList(EnemyEye, GL_COMPILE);
+	glPushMatrix();
 		int eyeLength = 5;
 		int eyeSides = 60;
 		int eyePos = 0;
@@ -96,8 +99,9 @@ void Ghost::lists(){
 		    }	
 			glVertex2f(0, eyeLength);	
 		glEnd();
-	glEndList();
 	glPopMatrix();
+	glEndList();
+	
 
 }
 

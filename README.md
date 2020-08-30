@@ -29,24 +29,44 @@
 
 ## Features 
 
+### Zooming
+Page Up and Page Down to zzom into pacmans surroundings in closed view!
+
 ### Pacman Light
+The light mode enables the viewer to see only the immediate surroundings! Ambient light is diabled!
+
 ### Procedural Maze
+Unique maze each time the program is run!
+
 ### Pacman 
+Designed to llok like Toru Iwatchi's original!
+
 ### Bombs
+Cause a loss of 10 points when encountered!
+
 ### Stars
-### Coins
+Cause an increse of 10 points when encountered as well as an increase in battery power!
+
 ### Ghost
-### Lighting
+Designed to look like from Toru Iwatchi's original!
+
 ### Score
-### Health
+Displayed in all modes!
+
+### Battery
+Displayed in light mode!
 
 
 ## Special Features
 
 ### Blinking Pacman
-### Roatating Pacman
-### Goal Ceremony
+Paman gives you a wink every now and then!
+
+### Rotating Pacman
+Pacman rotates to take the path you have chosen for it!
+
 ### Auto Mode
-### Rainbow Square
+Pacman travels the mode all on his own in this mode!
+
 ### Custom Maze Size
-### Levels
+You can create a free size maze in this mode!

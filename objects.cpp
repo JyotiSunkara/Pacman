@@ -62,11 +62,11 @@ void Objects::lists() {
             glPopMatrix();
 
           
-    } else if (type == COIN) {
+    } else if (type == BATTERY) {
         int sides = 60;
         int length = 20;
         glBegin(GL_TRIANGLE_FAN);
-			glNormal3f(0, 0, 1.0);
+			// glNormal3f(0, 0, 1.0);
 			glColor3f(1, 1, 0);
 			glVertex3f(0, 0, -1.0);
 			glColor3f(1, 1, 0);

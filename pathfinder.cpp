@@ -6,6 +6,9 @@
 
 #include "pathfinder.h"
 
+bool lightMode = false;
+int batteryTime = 255;
+
 void PathFinder::setDest(Direction newDest){
 	this->initDest = Dest;
 	this->Dest = newDest;
@@ -38,39 +41,31 @@ void PathFinder::lists(int positionX, int positionY){
 
 
 	glNewList(Face, GL_COMPILE);
-    glPushMatrix();
-
-		// GLfloat ambientColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
-		// glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
-		// glEnable(GL_LIGHT0);
-		// glEnable(GL_LIGHT1);
-
-
-		// // Set lighting intensity and color
-		// GLfloat qaAmbientLight[]	= {0.2, 0.2, 0.2, 1.0};
-		// GLfloat qaDiffuseLight[]	= {0.8, 0.8, 0.8, 1.0};
-		// GLfloat qaSpecularLight[]	= {1.0, 1.0, 1.0, 1.0};
-		// glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
-		// glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
-		// glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
-
-		// // Set the light position
-		// GLfloat qaLightPosition[]	= {(GLfloat)positionX, (GLfloat)positionY, -0.5, 1.0};
-		// glLightfv(GL_LIGHT0, GL_POSITION, qaLightPosition);
+    
+		if(lightMode == true) {
+		GLfloat ambientColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
+		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+		glEnable(GL_LIGHT0);
 
 
-		// glLightfv(GL_LIGHT1, GL_AMBIENT, qaAmbientLight);
-		// glLightfv(GL_LIGHT1, GL_DIFFUSE, qaDiffuseLight);
-		// glLightfv(GL_LIGHT1, GL_SPECULAR, qaSpecularLight);
-		// glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.5);
-		// GLfloat spotLightDirection[]	= {(GLfloat)(positionX), (GLfloat)(positionY), 0.0, 1.0};
-		// glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotLightDirection);
-		// glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20); 
-		// GLfloat spotPosition[]	= {(GLfloat)positionX - 10, (GLfloat)positionY, -0.5, 1.0};
-		// glLightfv(GL_LIGHT1, GL_POSITION, spotPosition);
+		// Set lighting intensity and color
+		GLfloat qaAmbientLight[]	= {0.0, 0.0, 0.0, 1.0};
+		GLfloat qaDiffuseLight[]	= {(GLfloat)(batteryTime/255.0), (GLfloat)(batteryTime/255.0), (GLfloat)(batteryTime/255.0), 1.0};
+		GLfloat qaSpecularLight[]	= {(GLfloat)(batteryTime/255.0), (GLfloat)(batteryTime/255.0), (GLfloat)(batteryTime/255.0), 1.0};
+		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1 - (batteryTime/255.0));
+		glLightfv(GL_LIGHT0, GL_AMBIENT, qaAmbientLight);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, qaDiffuseLight);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, qaSpecularLight);
+		// Set the light position
+		GLfloat qaLightPosition[]	= {(GLfloat)positionX, (GLfloat)positionY, 1.0, 1.0};
+		glLightfv(GL_LIGHT0, GL_POSITION, qaLightPosition);
 
 
+		}
+
+		
 		glBegin(GL_TRIANGLE_FAN);
+		glPushMatrix();
 			glNormal3f(0, 0, 1.0);
 			glColor3f(1, 127.0/255.0, 80.0/255.0);
 			glVertex3f(0, 0, 0);
@@ -84,7 +79,7 @@ void PathFinder::lists(int positionX, int positionY){
 		    }
 			glVertex3f(0, faceLength, 0);	
 			glEnd();
-    glPopMatrix();
+    	glPopMatrix();
 	
 		glEndList();
 

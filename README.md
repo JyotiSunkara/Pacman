@@ -90,13 +90,17 @@
 ## Special Features
 
 ### Blinking Pacman and Pink
-    Paman and Pinky give you a wink every now and then!
+
+Paman and Pinky give you a wink every now and then!
 
 ### Rotating Pacman
-    Pacman rotates to take the path you have chosen for it when you press the arrow keys. This gives the user a better user experience while playing the game.
+
+Pacman rotates to take the path you have chosen for it when you press the arrow keys. This gives the user a better user experience while playing the game.
 
 ### Auto Mode
-    Pacman travels the maze all on his own in this mode! The enemy is disabled to allow pacman to freely find his way and show you how to get to the exit.
+
+Pacman travels the maze all on his own in this mode! The enemy is disabled to allow pacman to freely find his way and show you how to get to the exit.
 
 ### Custom Maze Size
-    You can create a free size maze in this mode! The program will prompt for a maze with and haight in the range [5, 50] and then create the grid.
+
+You can create a free size maze in this mode! The program will prompt for a maze with and haight in the range [5, 50] and then create the grid.

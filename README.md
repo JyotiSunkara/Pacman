@@ -1,39 +1,48 @@
 # Pacman
+![Pacman](images/lighting.png)
 
 ## Controls
 
-- `Space bar` 
+- `Space bar`
+
     Begin procedural generation of the maze.
 
-- `W A S D`    
+- `W A S D` 
+
     Scroll the maze right, left, top and bottom.
 
-- `Arrow keys` 
+- `Arrow keys`
+
     Move the character right, left, up and down when the maze allows it!
 
-- `Page up`    
+- `Page up`
+
     Zoom into Pacman's location, feature available in closed view only.
 
 - `Page down`
+
     Zoom out of Pacman's location, feature available in closed view only.
 
 - `Home key`  
+
     Over view the maze to see the enemy, bomb and star locations!
 
 - `End key` 
+
     Closed view the maze, can view Pacman and its surroundings.
 
 - `Delete key`
+
     Reset zoom and scroll back to default closed view.
 
 
 ## Features 
 
 ### Zooming
-    Page Up and Page Down to zzom into pacmans surroundings in closed view!
+    Page Up and Page Down to zoom into pacmans surroundings. Availbale in closed view!
 
-### Pacman Light
-    The light mode enables the viewer to see only the immediate surroundings! Ambient light is diabled!
+### Pacman Light Mode
+    The light mode enables the viewer to see only the immediate surroundings of Pacaman. Ambient light is disabled!
 
 ![Pacman](images/lightmaze.png)
 
@@ -80,14 +89,14 @@
 
 ## Special Features
 
-### Blinking Pacman
-    Paman gives you a wink every now and then!
+### Blinking Pacman and Pink
+    Paman and Pinky give you a wink every now and then!
 
 ### Rotating Pacman
-    Pacman rotates to take the path you have chosen for it!
+    Pacman rotates to take the path you have chosen for it when you press the arrow keys. This gives the user a better user experience while playing the game.
 
 ### Auto Mode
-    Pacman travels the mode all on his own in this mode!
+    Pacman travels the maze all on his own in this mode! The enemy is disabled to allow pacman to freely find his way and show you how to get to the exit.
 
 ### Custom Maze Size
-    You can create a free size maze in this mode!
+    You can create a free size maze in this mode! The program will prompt for a maze with and haight in the range [5, 50] and then create the grid.

@@ -1,6 +1,17 @@
 # Pacman
 ![Pacman](images/lighting.png)
 
+## Running the program
+
+The program requires the installation of OpenGL and GLUT.
+
+``bash
+> git clone https://github.com/JyotiSunkara/Pacman.git
+> cd Pacman
+> make 
+> ./pacman
+``
+
 ## Controls
 
 - `Space bar`
@@ -35,14 +46,14 @@
 
     Reset zoom and scroll back to default closed view.
 
-
 ## Features 
 
 ### Zooming
     Page Up and Page Down to zoom into pacmans surroundings. Availbale in closed view!
 
 ### Pacman Light Mode
-    The light mode enables the viewer to see only the immediate surroundings of Pacaman. Ambient light is disabled!
+    The light mode enables the viewer to see only the immediate surroundings of Pacaman. 
+    Ambient light is disabled!
 
 ![Pacman](images/lightmaze.png)
 
@@ -89,7 +100,7 @@
 
 ## Special Features
 
-### Blinking Pacman and Pink
+### Blinking Pacman and Pinky
 
 Paman and Pinky give you a wink every now and then!
 

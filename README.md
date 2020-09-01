@@ -5,12 +5,12 @@
 
 The program requires the installation of OpenGL and GLUT.
 
-``bash
+```bash
 > git clone https://github.com/JyotiSunkara/Pacman.git
 > cd Pacman
 > make 
 > ./pacman
-``
+```
 
 ## Controls
 
